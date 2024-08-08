@@ -1,6 +1,6 @@
 import { ContentFilter, TenorImage } from '../types/exposedTypes';
 
-const MEDIA_FILTER = 'gif,tinygif';
+const MEDIA_FILTER = 'mediumgif,tinygif';
 const BASE_URL = 'https://tenor.googleapis.com/v2/';
 
 export interface TenorCategory {
@@ -62,7 +62,7 @@ class TenorManager {
 
 	private praseResult(img: any): TenorImage {
 		const preview = img['media_formats']['tinygif'];
-		const gif = img['media_formats']['gif'];
+		const gif = img['media_formats']['mediumgif'];
 
 		return {
 			id: img.id,
