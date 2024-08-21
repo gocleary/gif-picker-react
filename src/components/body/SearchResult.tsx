@@ -1,35 +1,48 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useCallback } from 'react';
 import TenorContext from '../../context/TenorContext';
-import { TenorResult } from '../../managers/TenorManager';
+import { TenorImage } from '../../types/exposedTypes';
 import GifList from './GifList';
 
 export interface SearchResultProps {
-	searchTerm: string;
-	columnsCount: number;
+  searchTerm: string;
+  columnsCount: number;
 }
 
 function SearchResult({ searchTerm, columnsCount }: SearchResultProps) {
-	const [searchResult, setSearchResult] = useState<TenorResult>(null!);
-	const [isLoading, setLoading] = useState(true);
+	const [ searchResult, setSearchResult ] = useState<TenorImage[]>([]);
+	const [ isLoading, setLoading ] = useState(true);
+	const [ nextPos, setNextPos ] = useState<string | null>(null);
 	const tenor = useContext(TenorContext);
+
+	const fetchGifs = useCallback(async (pos?: string) => {
+		const result = await tenor.search(searchTerm, 50, pos);
+		setSearchResult(prevResults => [ ...prevResults, ...result.images ]);
+		setNextPos(result.next);
+		setLoading(false);
+	}, [ searchTerm, tenor ]);
 
 	useEffect(() => {
 		setLoading(true);
-		async function search(): Promise<any> {
-			const result = await tenor.search(searchTerm);
-			setSearchResult(result);
-			setLoading(false);
-		}
-		const debounce = setTimeout(() => search(), 800);
+		setSearchResult([]);
+		setNextPos(null);
+		const debounce = setTimeout(() => fetchGifs(), 800);
 		return (): void => clearTimeout(debounce);
-	}, [searchTerm]);
+	}, [ searchTerm, fetchGifs ]);
+
+	const handleLoadMore = useCallback(() => {
+		if (nextPos) {
+			fetchGifs(nextPos);
+		}
+	}, [ nextPos, fetchGifs ]);
 
 	return (
 		<GifList
 			isLoading={isLoading}
 			columnsCount={columnsCount}
-			result={searchResult}
+			images={searchResult}
 			searchTerm={searchTerm}
+			onLoadMore={handleLoadMore}
+			hasMore={!!nextPos}
 		/>
 	);
 }
