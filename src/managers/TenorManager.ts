@@ -95,12 +95,16 @@ class TenorManager {
 			});
 	}
 
-	public async search(term: string, limit = 50): Promise<TenorResult> {
-		return this.callApi('search', {
+	public async search(term: string, limit = 50, pos?: string): Promise<TenorResult> {
+		const params: any = {
 			q: term,
 			'ar_range': 'all',
 			limit
-		})
+		};
+		if (pos) {
+			params.pos = pos;
+		}
+		return this.callApi('search', params)
 			.then((data: any) => {
 				const results = data.results;
 				const images = results.map(this.praseResult);
