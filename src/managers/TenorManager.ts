@@ -114,11 +114,15 @@ class TenorManager {
 			});
 	}
 
-	public async trending(limit = 50): Promise<TenorResult> {
-		return this.callApi('featured', {
+	public async trending(limit = 50, pos?: string): Promise<TenorResult> {
+		const params: any = {
 			ar_range: 'all',
 			limit,
-		}).then((data: any) => {
+		};
+		if (pos) {
+			params.pos = pos;
+		}
+		return this.callApi('featured', params).then((data: any) => {
 			const results = data.results;
 			const images = results.map(this.praseResult);
 			return {
